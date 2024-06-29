@@ -1,0 +1,39 @@
+version: "3.8"
+
+networks:
+  app-net:
+    name: app-net
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    tty: true
+    networks:
+      - app-net
+
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      - app-net
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+
+  prometheus:
+    image: prom/prometheus:latest
+    networks:
+      - app-net
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  pyroscope:
+    image: grafana/pyroscope:latest
+    networks:
+      - app-net
